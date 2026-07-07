@@ -61,6 +61,11 @@ Route::post('/prayer/api/log', [PrayerController::class, 'storePrayerLog'])->nam
 // GLOBAL THEME SAVER
 Route::post('/admin/settings/theme', [SettingsController::class, 'updateTheme'])->name('admin.theme.save');
 
+// AI COPILOT
+use App\Http\Controllers\AiCopilotController;
+Route::post('/ai-copilot/chat', [AiCopilotController::class, 'chat'])->name('ai.chat');
+Route::get('/ai-copilot/history', [AiCopilotController::class, 'history'])->name('ai.history');
+
 // AUTHENTICATED USER PORTAL
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [UserPanelController::class, 'dashboard'])->name('user.dashboard');

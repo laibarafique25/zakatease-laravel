@@ -169,6 +169,10 @@
     }, 3500);
   });
 </script>
+
+<!-- NOOR AI COPILOT -->
+<x-ai-copilot />
+
 </body>
 </html>
 
