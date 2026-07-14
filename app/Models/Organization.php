@@ -26,6 +26,21 @@ class Organization extends Model
         'rejection_reason',
         'is_verified',
         'is_featured',
+        'registration_number',
+        'license_number',
+        'tax_number',
+        'ntn',
+        'org_type',
+        'contact_person',
+        'bank_name',
+        'iban',
+        'account_title',
+        'gov_reg_cert_path',
+        'ngo_license_path',
+        'tax_cert_path',
+        'office_images_path',
+        'supporting_docs_path',
+        'mission_statement',
     ];
 
     protected $casts = [

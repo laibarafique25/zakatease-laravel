@@ -30,6 +30,8 @@ Route::get('/zakat', function() {
 });
 Route::get('/campaigns', [PageController::class, 'campaigns'])->name('campaigns');
 Route::get('/transparency', [PageController::class, 'transparency'])->name('transparency');
+Route::get('/success-stories', [PageController::class, 'successStories'])->name('success.stories');
+Route::get('/donor-reviews', [PageController::class, 'donorReviews'])->name('donor.reviews');
 Route::get('/apply', [PageController::class, 'apply'])->name('apply');
 Route::get('/faq', [PageController::class, 'faq'])->name('faq');
 Route::get('/contact', [PageController::class, 'contact'])->name('contact');
@@ -42,12 +44,15 @@ Route::get('/lectures', [PageController::class, 'lectures'])->name('lectures');
 Route::get('/tasbeeh', [PageController::class, 'tasbeeh'])->name('tasbeeh');
 Route::get('/azkar', [PageController::class, 'tasbeeh'])->name('azkar'); // Alias
 
+Route::get('/islamic-hub', [PageController::class, 'islamicHub'])->name('islamic.hub');
+Route::get('/knowledge-center', [PageController::class, 'knowledgeCenter'])->name('knowledge.center');
+Route::get('/quran-verses', [PageController::class, 'quranVerses'])->name('quran.verses');
 // GUEST AUTH ROUTES
 Route::middleware('guest')->group(function () {
     Route::get('/login', [PageController::class, 'login'])->name('login');
     Route::post('/login', [AuthController::class, 'loginSubmit'])->name('login.submit');
     Route::get('/signup', [PageController::class, 'signup'])->name('signup');
-    Route::post('/signup', [AuthController::class, 'signupSubmit'])->name('signup.submit');
+    Route::post('/signup', [\App\Http\Controllers\OnboardingController::class, 'store'])->name('signup.submit');
 });
 
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
@@ -103,6 +108,12 @@ Route::middleware(['auth', 'role:admin,super_admin'])->prefix('admin')->group(fu
     Route::post('/users/{user}/toggle-verification', [UserController::class, 'toggleVerification'])->name('admin.users.toggle_verification');
     Route::post('/users/{user}/toggle-status', [UserController::class, 'toggleStatus'])->name('admin.users.toggle_status');
     Route::get('/users-export', [UserController::class, 'export'])->name('admin.users.export');
+    Route::post('/users/{user}/approve', [UserController::class, 'approveUser'])->name('admin.users.approve');
+    Route::post('/users/{user}/reject', [UserController::class, 'rejectUser'])->name('admin.users.reject');
+    Route::post('/users/{user}/add-note', [UserController::class, 'addNote'])->name('admin.users.add_note');
+    Route::post('/users/{user}/trust-score', [UserController::class, 'updateTrustScore'])->name('admin.users.trust_score');
+    Route::post('/users/{user}/suspend', [UserController::class, 'suspendUser'])->name('admin.users.suspend');
+    Route::post('/users/{user}/block', [UserController::class, 'blockUser'])->name('admin.users.block');
 
     // Organizations Management
     Route::get('/organizations', [OrganizationController::class, 'index'])->name('admin.organizations.index');
@@ -143,8 +154,12 @@ Route::middleware(['auth', 'role:admin,super_admin'])->prefix('admin')->group(fu
     Route::delete('/zakat/faqs/{faq}', [ZakatContentController::class, 'destroyFaq'])->name('admin.zakat.faqs.destroy');
 
     // Prayers settings & configs
-    Route::get('/prayers', [PrayerManagementController::class, 'index'])->name('admin.prayers.index');
-    Route::post('/prayers/settings', [PrayerManagementController::class, 'updateSettings'])->name('admin.prayers.settings.update');
+    Route::get('/prayer-management', [\App\Http\Controllers\Admin\PrayerManagementController::class, 'index'])->name('admin.prayer.index');
+    Route::post('/prayer-management', [\App\Http\Controllers\Admin\PrayerManagementController::class, 'update'])->name('admin.prayer.update');
+    
+    // Market Rates Management
+    Route::get('/market-rates', [\App\Http\Controllers\Admin\MarketRateController::class, 'index'])->name('admin.market_rates.index');
+    Route::post('/market-rates/sync', [\App\Http\Controllers\Admin\MarketRateController::class, 'sync'])->name('admin.market_rates.sync');
 
     // Hadiths management
     Route::get('/hadith', [HadithController::class, 'index'])->name('admin.hadith.index');
@@ -192,6 +207,7 @@ Route::middleware(['auth', 'role:admin,super_admin'])->prefix('admin')->group(fu
 
     // Messages
     Route::get('/messages', [MessageController::class, 'index'])->name('admin.messages.index');
+    Route::post('/messages', [MessageController::class, 'store'])->name('admin.messages.store');
     Route::post('/messages/{message}/reply', [MessageController::class, 'reply'])->name('admin.messages.reply');
     Route::post('/broadcasts', [MessageController::class, 'storeBroadcast'])->name('admin.broadcasts.store');
     Route::delete('/messages/{message}', [MessageController::class, 'destroyMessage'])->name('admin.messages.destroy');

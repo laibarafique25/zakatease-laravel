@@ -52,6 +52,16 @@ class User extends Authenticatable
         return $this->hasOne(Organization::class);
     }
 
+    public function donorProfile()
+    {
+        return $this->hasOne(DonorProfile::class);
+    }
+
+    public function receiverProfile()
+    {
+        return $this->hasOne(ReceiverProfile::class);
+    }
+
     public function donations()
     {
         return $this->hasMany(Donation::class);

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\ActivityLog;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Mail;
 
 class UserController extends Controller
 {
@@ -47,8 +48,122 @@ class UserController extends Controller
 
     public function show(User $user)
     {
+        $user->load(['donorProfile', 'receiverProfile', 'organization']);
         $activities = ActivityLog::where('user_id', $user->id)->latest()->limit(10)->get();
         return view('admin.users.show', compact('user', 'activities'));
+    }
+
+    public function approveUser(User $user)
+    {
+        $user->status = 'active';
+        $user->is_verified = true;
+        $user->trust_score = max($user->trust_score, 50);
+        $user->save();
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'approve',
+            'module' => 'users',
+            'description' => "Approved and verified user account {$user->email}.",
+        ]);
+
+        // Send approval email silently (won't crash if mail not configured)
+        try {
+            Mail::raw(
+                "Dear {$user->name},\n\nCongratulations! Your account on ZARIYAH has been approved and verified.\n\nYou can now log in and access all features.\n\nBlessings,\nZARIYAH Team",
+                function ($message) use ($user) {
+                    $message->to($user->email)->subject('Your Account Has Been Approved - ZARIYAH');
+                }
+            );
+        } catch (\Exception $e) {}
+
+        return back()->with('success', "User {$user->name} has been approved and verified.");
+    }
+
+    public function rejectUser(Request $request, User $user)
+    {
+        $user->status = 'inactive';
+        $user->is_verified = false;
+        $user->save();
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'reject',
+            'module' => 'users',
+            'description' => "Rejected user account {$user->email}. Reason: " . ($request->reason ?? 'N/A'),
+        ]);
+
+        try {
+            Mail::raw(
+                "Dear {$user->name},\n\nWe regret to inform you that your account application was not approved at this time.\n\nReason: " . ($request->reason ?? 'Your documents could not be verified.') . "\n\nIf you believe this is a mistake, please contact support.\n\nBlessings,\nZARIYAH Team",
+                function ($message) use ($user) {
+                    $message->to($user->email)->subject('Account Application Update - ZARIYAH');
+                }
+            );
+        } catch (\Exception $e) {}
+
+        return back()->with('success', "User {$user->name} has been rejected.");
+    }
+
+    public function addNote(Request $request, User $user)
+    {
+        $request->validate(['note' => 'required|string|max:1000']);
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'note',
+            'module' => 'users',
+            'description' => "Admin note for {$user->email}: " . $request->note,
+        ]);
+
+        return back()->with('success', 'Note added successfully.');
+    }
+
+    public function updateTrustScore(Request $request, User $user)
+    {
+        $request->validate(['trust_score' => 'required|integer|min:0|max:100']);
+
+        $user->trust_score = $request->trust_score;
+        $user->save();
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'update',
+            'module' => 'users',
+            'description' => "Updated trust score for {$user->email} to {$request->trust_score}.",
+        ]);
+
+        return back()->with('success', 'Trust score updated.');
+    }
+
+    public function suspendUser(User $user)
+    {
+        $user->status = 'inactive';
+        $user->save();
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'suspend',
+            'module' => 'users',
+            'description' => "Suspended user account {$user->email}.",
+        ]);
+
+        return back()->with('success', "User {$user->name} has been suspended.");
+    }
+
+    public function blockUser(User $user)
+    {
+        $user->status = 'banned';
+        $user->save();
+
+        ActivityLog::create([
+            'user_id' => auth()->id(),
+            'action' => 'block',
+            'module' => 'users',
+            'description' => "Blocked user account {$user->email}.",
+        ]);
+
+        return back()->with('success', "User {$user->name} has been blocked.");
     }
 
     public function create()

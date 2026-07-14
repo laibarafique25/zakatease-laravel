@@ -42,40 +42,48 @@
       <table class="admin-table">
         <thead>
           <tr>
-            <th>Name</th>
+            <th>Logo</th>
+            <th>Organization Name</th>
+            <th>City</th>
             <th>Email</th>
-            <th>Website</th>
-            <th>Location</th>
+            <th>Phone</th>
             <th>Status</th>
-            <th>Verified</th>
+            <th>Verified Badge</th>
+            <th>Created Date</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           @forelse($organizations as $org)
             <tr>
+              <td>
+                @if($org->logo)
+                  <img src="{{ asset('storage/' . $org->logo) }}" alt="Logo" style="width: 40px; height: 40px; border-radius: 50%; object-fit: cover;">
+                @else
+                  <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--border); display: flex; align-items: center; justify-content: center; font-weight: bold; color: var(--text-light);">
+                    {{ strtoupper(substr($org->name, 0, 1)) }}
+                  </div>
+                @endif
+              </td>
               <td class="bold">
                 <a href="{{ route('admin.organizations.show', $org->id) }}" style="text-decoration:none; color:var(--text)">{{ $org->name }}</a>
               </td>
+              <td>{{ $org->city ?? 'N/A' }}</td>
               <td>{{ $org->email ?? 'N/A' }}</td>
-              <td>
-                @if($org->website)
-                  <a href="{{ $org->website }}" target="_blank" style="color:var(--accent)">{{ $org->website }}</a>
-                @else
-                  N/A
-                @endif
-              </td>
-              <td>{{ $org->city }}, {{ $org->country }}</td>
+              <td>{{ $org->phone ?? 'N/A' }}</td>
               <td>
                 <span class="badge badge-{{ $org->status === 'approved' ? 'success' : ($org->status === 'pending' ? 'warning' : 'danger') }}">
-                  {{ $org->status }}
+                  {{ ucfirst($org->status) }}
                 </span>
               </td>
               <td>
-                <span class="badge badge-{{ $org->is_verified ? 'success' : 'warning' }}">
-                  {{ $org->is_verified ? 'Yes' : 'No' }}
-                </span>
+                @if($org->is_verified)
+                  <span class="badge badge-success" title="Verified">✅ Verified</span>
+                @else
+                  <span class="badge badge-warning" title="Unverified">❌ Unverified</span>
+                @endif
               </td>
+              <td>{{ $org->created_at->format('Y-m-d') }}</td>
               <td>
                 <div class="flex-gap">
                   <a href="{{ route('admin.organizations.show', $org->id) }}" class="btn btn-secondary btn-sm" style="padding: 0.25rem 0.5rem">👁️</a>
@@ -93,7 +101,7 @@
             </tr>
           @empty
             <tr>
-              <td colspan="7" class="text-center">No organizations registered yet.</td>
+              <td colspan="9" class="text-center">No organizations registered yet.</td>
             </tr>
           @endforelse
         </tbody>

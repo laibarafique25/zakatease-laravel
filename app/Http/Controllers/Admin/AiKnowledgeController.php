@@ -20,9 +20,9 @@ class AiKnowledgeController extends Controller
                   ->orWhere('category', 'like', "%{$search}%");
         }
 
-        $items = $query->latest()->paginate(15)->withQueryString();
+        $entries = $query->latest()->paginate(15)->withQueryString();
 
-        return view('admin.ai.index', compact('items'));
+        return view('admin.ai.index', compact('entries'));
     }
 
     public function create()

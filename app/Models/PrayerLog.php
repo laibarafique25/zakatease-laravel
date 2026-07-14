@@ -27,4 +27,9 @@ class PrayerLog extends Model
         'logged_at' => 'datetime',
         'meta' => 'array',
     ];
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

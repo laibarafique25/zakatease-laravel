@@ -78,9 +78,19 @@ if (prayerPage) {
     return `${window.location.origin}${getAppBaseUrl()}/${path}`.replace(/([^:]\/\/)+/g, '$1');
   }
 
+  function getNow() {
+    const tz = state.location.timezone || 'Asia/Karachi';
+    try {
+      const tzString = new Date().toLocaleString("en-US", { timeZone: tz });
+      return new Date(tzString);
+    } catch (e) {
+      return new Date();
+    }
+  }
+
   function parseTime(value) {
     const [hour, minute] = String(value).split(':').map(Number);
-    const date = new Date();
+    const date = getNow();
     date.setHours(hour, minute, 0, 0);
     return date;
   }
@@ -94,7 +104,7 @@ if (prayerPage) {
 
   function updateStatusPanel(logs) {
     const stats = habitStats(logs);
-    const now = new Date();
+    const now = getNow();
     const today = now.toISOString().split('T')[0];
 
     const daily = stats.completed >= 5 ? 7 : 3;
@@ -221,24 +231,31 @@ if (prayerPage) {
   }
 
   function computeNextPrayer(now, timings) {
-    const prayerTimes = prayerOrder.map((name) => ({
+    // Only actual prayers are considered for current/next logic (exclude Sunrise)
+    const actualPrayers = ['Fajr', 'Dhuhr', 'Asr', 'Maghrib', 'Isha'];
+    
+    const prayerTimes = actualPrayers.map((name) => ({
       name,
       time: parseTime(timings[name] || '00:00'),
     }));
 
-    let current = prayerTimes[0];
-    let next = prayerTimes[0];
+    let current = prayerTimes[prayerTimes.length - 1]; // Default to Isha
+    let next = prayerTimes[0]; // Default to Fajr of next day
 
     for (let index = 0; index < prayerTimes.length; index += 1) {
       const item = prayerTimes[index];
+      // When now is less than item's time, the NEXT prayer is item
+      // and the CURRENT prayer is the one before it.
       if (now < item.time) {
         current = index === 0 ? prayerTimes[prayerTimes.length - 1] : prayerTimes[index - 1];
         next = item;
         break;
       }
+      
+      // If we reach the end and now >= Isha time
       if (index === prayerTimes.length - 1) {
         current = item;
-        next = prayerTimes[0];
+        next = prayerTimes[0]; // Fajr of the next day
       }
     }
 
@@ -246,7 +263,7 @@ if (prayerPage) {
   }
 
   function updateCountdownCard(nextPrayer) {
-    const now = new Date();
+    const now = getNow();
     let diff = nextPrayer.time - now;
     if (diff < 0) diff += 24 * 60 * 60 * 1000;
     const h = Math.floor(diff / 3600000);
@@ -270,7 +287,7 @@ if (prayerPage) {
   }
 
   function updateNotifications(current, next) {
-    const now = new Date();
+    const now = getNow();
     prayerOrder.forEach((name) => {
       const time = parseTime(state.timings[name] || '00:00');
       const beforeTrigger = time.getTime() - 15 * 60 * 1000;
@@ -311,7 +328,7 @@ if (prayerPage) {
         if (weather) updateWeatherCard(weather, state.location);
       }
 
-      const now = new Date();
+      const now = getNow();
       const { current, next } = computeNextPrayer(now, state.timings);
       renderPrayerGrid(current.name);
       updateSunTimes(state.timings);
@@ -438,7 +455,7 @@ if (prayerPage) {
   initializePrayerDashboard();
   setInterval(async () => {
     if (!Object.keys(state.timings).length) return;
-    const now = new Date();
+    const now = getNow();
     const next = computeNextPrayer(now, state.timings).next;
     updateCountdownCard(next);
     updateNotifications(computeNextPrayer(now, state.timings).current, next);

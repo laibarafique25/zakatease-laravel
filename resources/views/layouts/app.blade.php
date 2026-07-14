@@ -8,7 +8,9 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=DM+Sans:wght@300;400;500;600&family=Amiri:wght@400;700&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css" />
   <link rel="stylesheet" href="{{ asset('assets/css/style.css') }}?v=2">
+  @vite(['resources/css/app.css', 'resources/js/app.js'])
   <script>
     const savedTheme = localStorage.getItem('theme');
     if (savedTheme) {
@@ -17,6 +19,23 @@
       document.documentElement.setAttribute('data-theme', 'dark');
     }
   </script>
+  <style>
+    /* Dropdown Styles */
+    .nav-dropdown { position: relative; display: inline-block; }
+    .nav-dropdown-menu {
+      display: none; position: absolute; top: 100%; left: 0;
+      background: var(--card-bg); border: 1px solid var(--border);
+      min-width: 220px; box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      border-radius: 8px; z-index: 1000; padding: 0.5rem 0;
+    }
+    .nav-dropdown:hover .nav-dropdown-menu { display: block; }
+    .nav-dropdown-menu a {
+      display: block; padding: 0.75rem 1.5rem; color: var(--text) !important;
+      text-decoration: none; font-size: 0.95rem; transition: all 0.2s;
+    }
+    .nav-dropdown-menu a:hover { background: rgba(16,185,129,0.1); color: var(--emerald) !important; }
+    .nav-dropdown-toggle { display:flex; align-items:center; gap:4px; cursor:pointer }
+  </style>
 </head>
 <body>
 
@@ -42,9 +61,34 @@
   </a>
   <ul class="nav-links">
     <li><a href="{{ url('/') }}" class="{{ Request::is('/') ? 'active' : '' }}">Home</a></li>
+    <li class="nav-dropdown">
+      <a class="nav-dropdown-toggle {{ Request::is('islamic-hub', 'prayer', 'hadith', 'tasbeeh', 'azkar', 'knowledge-center', 'quran-verses') ? 'active' : '' }}" href="{{ route('islamic.hub') }}">
+        Islamic Hub
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
+      </a>
+      <div class="nav-dropdown-menu">
+        <a href="{{ route('islamic.hub') }}">Hub Overview</a>
+        <a href="{{ route('prayer') }}">Prayer Times</a>
+        <a href="{{ route('hadith') }}">Daily Hadith</a>
+        <a href="{{ route('azkar') }}">Daily Azkar</a>
+        <a href="{{ route('tasbeeh') }}">Digital Tasbeeh</a>
+        <a href="{{ route('knowledge.center') }}">Knowledge Center</a>
+        <a href="{{ route('quran.verses') }}">Quranic Verses</a>
+      </div>
+    </li>
     <li><a href="{{ url('/calculator') }}" class="{{ Request::is('calculator') ? 'active' : '' }}">Calculator</a></li>
-    <li><a href="{{ url('/campaigns') }}" class="{{ Request::is('campaigns') ? 'active' : '' }}">Campaigns</a></li>
-    <li><a href="{{ url('/transparency') }}" class="{{ Request::is('transparency') ? 'active' : '' }}">Transparency</a></li>
+    <li class="nav-dropdown">
+      <a class="nav-dropdown-toggle {{ Request::is('campaigns', 'transparency', 'success-stories', 'donor-reviews') ? 'active' : '' }}" href="#">
+        Impact
+        <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 9l-7 7-7-7"></path></svg>
+      </a>
+      <div class="nav-dropdown-menu">
+        <a href="{{ route('campaigns') }}">Campaigns</a>
+        <a href="{{ route('transparency') }}">Transparency</a>
+        <a href="{{ route('success.stories') }}">Success Stories</a>
+        <a href="{{ route('donor.reviews') }}">Donor Reviews</a>
+      </div>
+    </li>
     <li><a href="{{ url('/apply') }}" class="{{ Request::is('apply') ? 'active' : '' }}">Apply For Help</a></li>
     <li><a href="{{ url('/faq') }}" class="{{ Request::is('faq') ? 'active' : '' }}">FAQ</a></li>
     <li><a href="{{ url('/contact') }}" class="{{ Request::is('contact') ? 'active' : '' }}">Contact</a></li>
@@ -72,9 +116,26 @@
 <!-- MOBILE MENU -->
 <div class="mobile-menu" id="mobileMenu">
   <a href="{{ url('/') }}" onclick="closeMenu()">Home</a>
+  
+  <div style="border-bottom:1px solid var(--border); padding-bottom:0.5rem; margin-bottom:0.5rem">
+    <p style="color:var(--text-light); font-size:0.85rem; margin:1rem 0 0.5rem 1.5rem; text-transform:uppercase; letter-spacing:1px">Islamic Hub</p>
+    <a href="{{ route('islamic.hub') }}" onclick="closeMenu()" style="font-size:0.95rem; padding-left:2rem; padding-top:0.5rem; padding-bottom:0.5rem;">Hub Overview</a>
+    <a href="{{ route('prayer') }}" onclick="closeMenu()" style="font-size:0.95rem; padding-left:2rem; padding-top:0.5rem; padding-bottom:0.5rem;">Prayer Times</a>
+    <a href="{{ route('hadith') }}" onclick="closeMenu()" style="font-size:0.95rem; padding-left:2rem; padding-top:0.5rem; padding-bottom:0.5rem;">Daily Hadith</a>
+    <a href="{{ route('azkar') }}" onclick="closeMenu()" style="font-size:0.95rem; padding-left:2rem; padding-top:0.5rem; padding-bottom:0.5rem;">Daily Azkar</a>
+    <a href="{{ route('tasbeeh') }}" onclick="closeMenu()" style="font-size:0.95rem; padding-left:2rem; padding-top:0.5rem; padding-bottom:0.5rem;">Digital Tasbeeh</a>
+    <a href="{{ route('knowledge.center') }}" onclick="closeMenu()" style="font-size:0.95rem; padding-left:2rem; padding-top:0.5rem; padding-bottom:0.5rem;">Knowledge Center</a>
+    <a href="{{ route('quran.verses') }}" onclick="closeMenu()" style="font-size:0.95rem; padding-left:2rem; padding-top:0.5rem; padding-bottom:0.5rem;">Quranic Verses</a>
+  </div>
+
   <a href="{{ url('/calculator') }}" onclick="closeMenu()">Zakat Calculator</a>
-  <a href="{{ url('/campaigns') }}" onclick="closeMenu()">Campaigns</a>
-  <a href="{{ url('/transparency') }}" onclick="closeMenu()">Transparency</a>
+  <div style="border-bottom:1px solid var(--border); padding-bottom:0.5rem; margin-bottom:0.5rem">
+    <p style="color:var(--text-light); font-size:0.85rem; margin:1rem 0 0.5rem 1.5rem; text-transform:uppercase; letter-spacing:1px">Impact</p>
+    <a href="{{ route('campaigns') }}" onclick="closeMenu()" style="font-size:0.95rem; padding-left:2rem; padding-top:0.5rem; padding-bottom:0.5rem;">Campaigns</a>
+    <a href="{{ route('transparency') }}" onclick="closeMenu()" style="font-size:0.95rem; padding-left:2rem; padding-top:0.5rem; padding-bottom:0.5rem;">Transparency</a>
+    <a href="{{ route('success.stories') }}" onclick="closeMenu()" style="font-size:0.95rem; padding-left:2rem; padding-top:0.5rem; padding-bottom:0.5rem;">Success Stories</a>
+    <a href="{{ route('donor.reviews') }}" onclick="closeMenu()" style="font-size:0.95rem; padding-left:2rem; padding-top:0.5rem; padding-bottom:0.5rem;">Donor Reviews</a>
+  </div>
   <a href="{{ url('/apply') }}" onclick="closeMenu()">Apply For Help</a>
   <a href="{{ url('/faq') }}" onclick="closeMenu()">FAQ</a>
   <a href="{{ url('/contact') }}" onclick="closeMenu()">Contact</a>
@@ -153,6 +214,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/aos/2.3.4/aos.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
 
 <script src="{{ asset('assets/js/app.js') }}?v=2"></script>
 <script>
